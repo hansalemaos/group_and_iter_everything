@@ -1225,3 +1225,52 @@ def iter_reshape(seq, how):
                 i += n
         rv[k] = container(_rv)
     return type(seq)(rv)
+
+
+def iter_rotate_left(iterable, n, onlyfinal=False):
+    try:
+        iterable_ = iterable.copy()
+    except Exception:
+        iterable_ = iterable
+
+    for _ in range(n):
+        iterable_ = iterable_[1:] + iterable_[:1]
+        if not onlyfinal:
+            yield iterable_
+    if onlyfinal:
+        yield iterable_
+
+
+def iter_rotate_right(iterable, n, onlyfinal=False):
+    try:
+        iterable_ = iterable.copy()
+    except Exception:
+        iterable_ = iterable
+
+    for _ in range(n):
+        iterable_ = iterable_[-1:] + iterable_[:-1]
+        if not onlyfinal:
+            yield iterable_
+    if onlyfinal:
+        yield iterable_
+
+
+def polymul(p, q):
+    """
+    Multiply two polynomials, represented as lists of coefficients.
+    """
+    r = [0] * (len(p) + len(q) - 1)
+    for i, c in enumerate(p):
+        for j, d in enumerate(q):
+            r[i + j] += c * d
+    return r
+
+
+def iter_number_of_combinations(it, k):
+    """
+    from https://stackoverflow.com/a/48612518/15096247
+    Number of combinations of length *k* of the elements of *it*.
+    """
+    counts = collections.Counter(it).values()
+    prod = reduce(polymul, [[1] * (count + 1) for count in counts], [1])
+    return prod[k] if k < len(prod) else 0
