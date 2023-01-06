@@ -1274,3 +1274,52 @@ def iter_number_of_combinations(it, k):
     counts = collections.Counter(it).values()
     prod = reduce(polymul, [[1] * (count + 1) for count in counts], [1])
     return prod[k] if k < len(prod) else 0
+
+
+def iter_call_function_over_and_over_with_new_value(f, x):
+    """https://github.com/joelgrus/stupid-itertools-tricks-pydata/blob/master/src/stupid_tricks.py"""
+    return itertools.accumulate(itertools.repeat(x), lambda fx, _: f(fx))
+
+
+def iter_stop_when_next_item_is_duplicate(it):
+    """https://github.com/joelgrus/stupid-itertools-tricks-pydata/blob/master/src/stupid_tricks.py"""
+
+    def no_repeat(prev, curr):
+        if prev == curr:
+            raise StopIteration
+        else:
+            return curr
+
+    return itertools.accumulate(it, no_repeat)
+
+
+def iter_nested_one_ahead(iterable):
+    try:
+        vara = iterable.copy()
+    except Exception:
+        vara = iterable
+    flali = list(fla_tu(vara))
+    for x, x2 in itertools.zip_longest(flali, flali[1:]):
+        n = len(x[1])
+        foryield = []
+        foryield1 = []
+        for i in range(n):
+            foryield1.append(reduce(operator.getitem, x[1][: i + 1], vara))
+        foryield.append(foryield1.copy())
+        foryield2 = []
+
+        if not is_nan(x2):
+            n = len(x2[1])
+            for i in range(n):
+                foryield2.append(reduce(operator.getitem, x2[1][: i + 1], vara))
+        if not any(foryield2):
+            return
+        foryield.append(foryield2.copy())
+        yield foryield
+
+
+def iter_random_values_from_iter_endless(iterable):
+    while True:
+        v = list(flatten_everything(iterable))
+        random.shuffle(v)
+        yield from v
