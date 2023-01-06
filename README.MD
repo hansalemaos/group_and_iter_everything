@@ -770,5 +770,60 @@ for ini,cir in enumerate(iter_spiral(radius=10,eccentricity = 1.5,step = 0.1,t =
 (3.5693100009050576, 13.796296219838446)
 (1.5915870375233105, 14.962424799060818)
 (-0.700788535230937, 15.993177648664085)		
+
+######################################################
+vara= ['key1','x', 'key2',['one', 'two', 'three']]
+
+# normal python version
+for k in vara:
+    if isinstance(k,list):
+        for li in k:
+            print(k, li)
+    else:
+        print(k)
+
+# output:	
+key1
+x
+key2
+['one', 'two', 'three'] one
+['one', 'two', 'three'] two
+['one', 'two', 'three'] three
+
+
+# same thing, but much shorter:
+for k in iter_nested(iterable=vara):
+    print(k)
+
+# output:		
+['key1']
+['x']
+['key2']
+[['one', 'two', 'three'], 'one']
+[['one', 'two', 'three'], 'two']
+[['one', 'two', 'three'], 'three']	
+
+######################################################
+# same as iter_nested, but with path to each value
+for k in iter_nested_with_path(iterable=vara):
+    print(k)
+
+# output:	
+[((0,), 'key1')]
+[((1,), 'x')]
+[((2,), 'key2')]
+[((3,), ['one', 'two', 'three']), ((3, 0), 'one')]
+[((3,), ['one', 'two', 'three']), ((3, 1), 'two')]
+[((3,), ['one', 'two', 'three']), ((3, 2), 'three')]	
+######################################################
+print(list(iter_add_one_item_each_iteration(iterable=vara)))
+# output:	[['key1'], ['key1', 'x'], ['key1', 'x', 'key2'], ['key1', 'x', 'key2', ['one', 'two', 'three']]]
+######################################################
+print(list(iter_add_one_item_each_iteration_reverse(iterable=vara)))
+# output:	[[['one', 'two', 'three']], ['key2', ['one', 'two', 'three']], ['x', 'key2', ['one', 'two', 'three']], ['key1', 'x', 'key2', ['one', 'two', 'three']]]
+######################################################
+
+
+
 		
 ```
