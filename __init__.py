@@ -1,5 +1,6 @@
 import codecs
 import collections
+import colorsys
 import encodings
 import functools
 import itertools
@@ -1183,3 +1184,14 @@ def iter_nested_with_path(iterable):
                 (x[1][: i + 1], reduce(operator.getitem, x[1][: i + 1], vara))
             )
         yield foryield
+
+
+def iter_rainbow_colors(num_colors):
+    colors = []
+    for i in np.arange(0.0, 360.0, 360.0 / num_colors):
+        hue = i / 360.0
+        lightness = (50 + np.random.rand() * 10) / 100.0
+        saturation = (90 + np.random.rand() * 10) / 100.0
+        colors.append(colorsys.hls_to_rgb(hue, lightness, saturation))
+    for _ in ((int(255 * o[0]), int(255 * o[1]), int(255 * o[2])) for o in colors):
+        yield _
