@@ -4,6 +4,7 @@ import encodings
 import functools
 import itertools
 import math
+import operator
 import os
 import pathlib
 import random
@@ -1143,3 +1144,42 @@ def iter_spiral(radius, eccentricity=1.5, step=0.1, t=0):
     while True:
         t += step
         yield eccentricity * radius * t * math.cos(t), radius * t * math.sin(t)
+
+
+def iter_add_one_item_each_iteration(iterable):
+    for i in range(len(iterable)):
+        yield iterable[: i + 1]
+
+
+def iter_add_one_item_each_iteration_reverse(iterable):
+    l = len(iterable)
+    for i in range(l):
+        yield iterable[l - i - 1 :]
+
+
+def iter_nested(iterable):
+    try:
+        vara = iterable.copy()
+    except Exception:
+        vara = iterable
+    for x in fla_tu(vara):
+        n = len(x[1])
+        foryield = []
+        for i in range(n):
+            foryield.append(reduce(operator.getitem, x[1][: i + 1], vara))
+        yield foryield
+
+
+def iter_nested_with_path(iterable):
+    try:
+        vara = iterable.copy()
+    except Exception:
+        vara = iterable
+    for x in fla_tu(vara):
+        n = len(x[1])
+        foryield = []
+        for i in range(n):
+            foryield.append(
+                (x[1][: i + 1], reduce(operator.getitem, x[1][: i + 1], vara))
+            )
+        yield foryield
