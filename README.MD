@@ -822,6 +822,35 @@ print(list(iter_add_one_item_each_iteration(iterable=vara)))
 print(list(iter_add_one_item_each_iteration_reverse(iterable=vara)))
 # output:	[[['one', 'two', 'three']], ['key2', ['one', 'two', 'three']], ['x', 'key2', ['one', 'two', 'three']], ['key1', 'x', 'key2', ['one', 'two', 'three']]]
 ######################################################
+from ansi.colour.rgb import rgb8, rgb16, rgb256
+from ansi.colour import fg, bg, fx
+text='bababa'
+for colour in iter_rainbow_colors(num_colors=10):
+    print(colour)
+    print("".join(list(map(str, (
+            fx.bold, bg.brightwhite, fg.brightwhite, rgb256(colour[0], colour[1], colour[2]), text, bg.brightwhite,
+            fg.brightwhite, fx.bold, fx.reset,), ))))
+# output:
+(250, 54, 54)
+bababa
+(247, 170, 54)
+bababa
+(202, 247, 23)
+bababa
+(79, 254, 35)
+bababa
+(49, 252, 130)
+bababa
+(27, 248, 248)
+bababa
+(33, 120, 250)
+bababa
+(88, 48, 249)
+bababa
+(207, 25, 252)
+bababa
+(248, 42, 166)
+bababa
 
 
 
