@@ -1195,3 +1195,33 @@ def iter_rainbow_colors(num_colors):
         colors.append(colorsys.hls_to_rgb(hue, lightness, saturation))
     for _ in ((int(255 * o[0]), int(255 * o[1]), int(255 * o[2])) for o in colors):
         yield _
+
+
+def iter_reshape(seq, how):
+    """
+    # based on sympy.utilities.reshape
+    """
+    m = sum(flatten_everything(how))
+    seq = list(flatten_everything(seq))
+    n, rem = divmod(len(seq), m)
+    if m < 0 or rem:
+        raise ValueError(
+            "template must sum to positive number "
+            "that divides the length of the sequence"
+        )
+    i = 0
+    container = type(how)
+    rv = [None] * n
+    for k in range(len(rv)):
+        _rv = []
+        for hi in how:
+            if isinstance(hi, int):
+                _rv.extend(seq[i : i + hi])
+                i += hi
+            else:
+                n = sum(list(flatten_everything(hi)))
+                hi_type = type(hi)
+                _rv.append(hi_type(iter_reshape(seq[i : i + n], hi)[0]))
+                i += n
+        rv[k] = container(_rv)
+    return type(seq)(rv)
