@@ -893,4 +893,112 @@ from string import ascii_letters
 print(iter_number_of_combinations(it=ascii_letters, k=10))
 15820024220
 ######################################################		
+for k in iter_call_function_over_and_over_with_new_value(f=lambda x: x * 2, x=1):
+    print(k)
+    if k > 10000.0:
+        break
+
+# output:
+1
+2
+4
+8
+16
+32
+64
+128
+256
+512
+1024
+2048
+4096
+8192
+16384
+
+
+for k in iter_call_function_over_and_over_with_new_value(f=lambda x: x / 2, x=1):
+    print(k)
+    if k < 0.001:
+        break
+
+# output:
+1
+0.5
+0.25
+0.125
+0.0625
+0.03125
+0.015625
+0.0078125
+0.00390625
+0.001953125
+0.0009765625
+######################################################
+for x in iter_stop_when_next_item_is_duplicate(
+    it=[
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        76,
+        77,
+        77,
+        12,
+    ]
+):
+    print(x)
+    
+# output:
+1
+2
+3
+4
+5
+6
+76
+77    
+######################################################    
+iterable = [
+    (233, 233, 1123, [42, 11, 33, 221, 13]),
+    (122, 122, 12312),
+    (2121, 212),
+    (434, 123, 4243, 32),
+    (434, 123, 42423, 3322),
+]
+for list1, list2 in iter_nested_one_ahead(iterable):
+    areequal = list1[-1] == list2[-1]
+    if areequal:
+        print(list1)
+        print(list2)
+
+# output:
+[(233, 233, 1123, [42, 11, 33, 221, 13]), 233]
+[(233, 233, 1123, [42, 11, 33, 221, 13]), 233]
+[(122, 122, 12312), 122]
+[(122, 122, 12312), 122]
+######################################################    
+iterable = [
+    (233, 233, 1123, [42, 11, 33, 221, 13]),
+    (122, 122, 12312),
+    (2121, 212),
+    (434, 123, 4243, 32),
+    (434, 123, 42423, 3322),
+]
+for ini, p in enumerate(iter_random_values_from_iter_endless(iterable=iterable)):
+    if ini == 10:
+        break
+    print(p)   
+# output:
+4243
+123
+1123
+3322
+42
+434
+122
+32
+233
+212    
 ```
