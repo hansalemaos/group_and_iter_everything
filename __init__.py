@@ -19,7 +19,9 @@ from urllib import parse
 import numpy as np
 import numexpr
 import regex
+import xxhash
 from check_if_nan import is_nan
+from ctypes_window_info import get_window_infos
 from divide_region_into_rectangles import divide_region_into_rect, cropimage
 from flatten_any_dict_iterable_or_whatsoever import fla_tu
 from flatten_everything import flatten_everything
@@ -1323,3 +1325,227 @@ def iter_random_values_from_iter_endless(iterable):
         v = list(flatten_everything(iterable))
         random.shuffle(v)
         yield from v
+
+
+def groupby_element_pos(
+    pos, seq, continue_on_exceptions=True, withindex=False, withvalue=True
+):
+    return groupBy(
+        key=lambda v: v[pos] if len(v) > pos else "",
+        seq=seq,
+        continue_on_exceptions=continue_on_exceptions,
+        withindex=withindex,
+        withvalue=withvalue,
+    )
+
+
+def groupby_substring(
+    substring, seq, continue_on_exceptions=True, withindex=False, withvalue=True
+):
+    g = regex.compile(
+        "|".join(
+            [regex.escape(substring[: _ + 1]) for _ in reversed(range(len(substring)))]
+        )
+    )
+    return groupBy(
+        key=lambda i: sorted(h, key=lambda i: len(i))[-1]
+        if (h := g.findall(i))
+        else "",
+        seq=seq,
+        continue_on_exceptions=continue_on_exceptions,
+        withindex=withindex,
+        withvalue=withvalue,
+    )
+
+
+def find_common_start_string(seq):
+    counter = 1
+    resu = []
+    while (
+        len(
+            g := (
+                groupby_startswith(
+                    n=counter,
+                    seq=seq,
+                    continue_on_exceptions=True,
+                    withindex=False,
+                    withvalue=True,
+                )
+            )
+        )
+        == 1
+    ):
+        counter += 1
+        resu.append(tuple(g.keys())[0])
+    if resu:
+        return resu[-1]
+    return ""
+
+
+def find_common_end_string(seq):
+    seq = ["".join(list(reversed(k))) for k in seq]
+    counter = 1
+    resu = []
+    while (
+        len(
+            g := (
+                groupby_startswith(
+                    n=counter,
+                    seq=seq,
+                    continue_on_exceptions=True,
+                    withindex=False,
+                    withvalue=True,
+                )
+            )
+        )
+        == 1
+    ):
+        counter += 1
+        resu.append(tuple(g.keys())[0])
+    if resu:
+        return "".join(list(reversed(resu[-1])))
+    return ""
+
+
+def group_windows_by_class_name():
+    return groupBy(
+        key=lambda i: i.class_name,
+        seq=get_window_infos(),
+        continue_on_exceptions=True,
+        withindex=False,
+        withvalue=True,
+    )
+
+
+def group_windows_by_coords_client():
+    return groupBy(
+        key=lambda i: i.coords_client,
+        seq=get_window_infos(),
+        continue_on_exceptions=True,
+        withindex=False,
+        withvalue=True,
+    )
+
+
+def group_windows_by_coords_win():
+    return groupBy(
+        key=lambda i: i.coords_win,
+        seq=get_window_infos(),
+        continue_on_exceptions=True,
+        withindex=False,
+        withvalue=True,
+    )
+
+
+def group_windows_by_dim_client():
+    return groupBy(
+        key=lambda i: i.dim_client,
+        seq=get_window_infos(),
+        continue_on_exceptions=True,
+        withindex=False,
+        withvalue=True,
+    )
+
+
+def group_windows_by_dim_win():
+    return groupBy(
+        key=lambda i: i.dim_win,
+        seq=get_window_infos(),
+        continue_on_exceptions=True,
+        withindex=False,
+        withvalue=True,
+    )
+
+
+def group_windows_by_path():
+    return groupBy(
+        key=lambda i: i.path,
+        seq=get_window_infos(),
+        continue_on_exceptions=True,
+        withindex=False,
+        withvalue=True,
+    )
+
+
+def group_windows_by_pid():
+    return groupBy(
+        key=lambda i: i.pid,
+        seq=get_window_infos(),
+        continue_on_exceptions=True,
+        withindex=False,
+        withvalue=True,
+    )
+
+
+def group_windows_by_status():
+    return groupBy(
+        key=lambda i: i.status,
+        seq=get_window_infos(),
+        continue_on_exceptions=True,
+        withindex=False,
+        withvalue=True,
+    )
+
+
+def group_windows_by_tid():
+    return groupBy(
+        key=lambda i: i.tid,
+        seq=get_window_infos(),
+        continue_on_exceptions=True,
+        withindex=False,
+        withvalue=True,
+    )
+
+
+def group_windows_by_title():
+    return groupBy(
+        key=lambda i: i.title,
+        seq=get_window_infos(),
+        continue_on_exceptions=True,
+        withindex=False,
+        withvalue=True,
+    )
+
+
+def group_windows_by_windowtext():
+    return groupBy(
+        key=lambda i: i.windowtext,
+        seq=get_window_infos(),
+        continue_on_exceptions=True,
+        withindex=False,
+        withvalue=True,
+    )
+
+
+def get_file_hash(filepath):
+    with open(filepath, "rb") as f:
+        file_hash = xxhash.xxh3_128()
+        while chunk := f.read(8192):
+            file_hash.update(chunk)
+        hexdig = file_hash.hexdigest()
+        return hexdig
+
+
+def group_files_by_hash(
+    seq, continue_on_exceptions=True, withindex=False, withvalue=True
+):
+
+    return groupBy(
+        key=lambda i: get_file_hash(i),
+        seq=seq,
+        continue_on_exceptions=continue_on_exceptions,
+        withindex=withindex,
+        withvalue=withvalue,
+    )
+
+
+def group_vars_by_hash(
+    seq, continue_on_exceptions=True, withindex=False, withvalue=True
+):
+    return groupBy(
+        key=lambda i: hash(i),
+        seq=seq,
+        continue_on_exceptions=continue_on_exceptions,
+        withindex=withindex,
+        withvalue=withvalue,
+    )

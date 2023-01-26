@@ -3,8 +3,161 @@
 ```python
 pip install group-and-iter-everything
 ```
+### update 2023-01-26 
+```python
+######################################################
+seq=['hallo','hatschi', 'boot','bobo', 'baba', 'bdoo', 'float', 'boat' ]
+print(groupby_element_pos(pos=0,seq=seq, continue_on_exceptions=True, withindex=False, withvalue=True))
+# output: {'h': ['hallo', 'hatschi'], 'b': ['boot', 'bobo', 'baba', 'bdoo', 'boat'], 'f': ['float']}
 
-### groupby stuff 
+print(groupby_element_pos(pos=1,seq=seq, continue_on_exceptions=True, withindex=False, withvalue=True))
+# output: {'a': ['hallo', 'hatschi', 'baba'], 'o': ['boot', 'bobo', 'boat'], 'd': ['bdoo'], 'l': ['float']}
+
+print(groupby_element_pos(pos=0,seq=seq, continue_on_exceptions=True, withindex=True, withvalue=True))
+# output: {'h': [(0, 'hallo'), (1, 'hatschi')], 'b': [(2, 'boot'), (3, 'bobo'), (4, 'baba'), (5, 'bdoo'), (7, 'boat')], 'f': [(6, 'float')]}
+
+print(groupby_element_pos(pos=1,seq=seq, continue_on_exceptions=True, withindex=True, withvalue=True))
+# output: {'a': [(0, 'hallo'), (1, 'hatschi'), (4, 'baba')], 'o': [(2, 'boot'), (3, 'bobo'), (7, 'boat')], 'd': [(5, 'bdoo')], 'l': [(6, 'float')]}
+
+######################################################
+seq=['habichdich','hallo','hallihallo','hatschi', 'Game: halo' , 'boot','bobo', 'baba', 'bdoo', 'float', 'boat' ]
+print(groupby_substring(substring='hallo',seq=seq, continue_on_exceptions=True, withindex=False, withvalue=True))
+# output: {'hallo': ['hallo', 'hallihallo'], 'ha': ['hatschi'], 'hal': ['Game: halo'], '': ['boot', 'bobo', 'baba', 'bdoo', 'float', 'boat']}
+
+print(groupby_substring(substring='hallo',seq=seq, continue_on_exceptions=True, withindex=True, withvalue=True))
+# output: {'ha': [(0, 'habichdich'), (3, 'hatschi')], 'hallo': [(1, 'hallo'), (2, 'hallihallo')], 'hal': [(4, 'Game: halo')], '': [(5, 'boot'), (6, 'bobo'), (7, 'baba'), (8, 'bdoo'), (9, 'float'), (10, 'boat')]}
+
+print(groupby_substring(substring='hallo',seq=seq, continue_on_exceptions=True, withindex=True, withvalue=False))
+# output: {'ha': [0, 3], 'hallo': [1, 2], 'hal': [4], '': [5, 6, 7, 8, 9, 10]}
+
+######################################################
+print(find_common_start_string(seq=['ha','haaalo','hansa']))
+# output: ha
+######################################################
+print(find_common_end_string(seq=['hax','haaaloax','hansax']))
+# output: ax
+######################################################
+from pprint import pprint
+res=group_windows_by_class_name()
+pprint(res,width=25, compact=True)
+# ...
+# 'WindowsForms10.Window.20808.app.0.2780b98_r6_ad1': [WindowInfo(pid=18276, title='WindowsForms10.Window.20808.app.0.2780b98_r6_ad1', windowtext='', hwnd=203870, length=1, tid=14100, status='invisible', coords_client=(0, 278, 0, 464), dim_client=(278, 464), coords_win=(1453, 1731, 601, 1065), dim_win=(278, 464), class_name='WindowsForms10.Window.20808.app.0.2780b98_r6_ad1', path='C:\\Program Files\\Greenshot\\Greenshot.exe'),
+#                                                      WindowInfo(pid=18276, title='WindowsForms10.Window.20808.app.0.2780b98_r6_ad1', windowtext='', hwnd=269452, length=1, tid=14100, status='invisible', coords_client=(0, 128, 0, 48), dim_client=(128, 48), coords_win=(1730, 1858, 847, 895), dim_win=(128, 48), class_name='WindowsForms10.Window.20808.app.0.2780b98_r6_ad1', path='C:\\Program Files\\Greenshot\\Greenshot.exe'),
+#                                                      WindowInfo(pid=18276, title='WindowsForms10.Window.20808.app.0.2780b98_r6_ad1', windowtext='', hwnd=466062, length=1, tid=14100, status='invisible', coords_client=(0, 61, 0, 4), dim_client=(61, 4), coords_win=(1730, 1791, 669, 673), dim_win=(61, 4), class_name='WindowsForms10.Window.20808.app.0.2780b98_r6_ad1', path='C:\\Program Files\\Greenshot\\Greenshot.exe'),
+#                                                      WindowInfo(pid=18276, title='WindowsForms10.Window.20808.app.0.2780b98_r6_ad1', windowtext='', hwnd=531594, length=1, tid=14100, status='invisible', coords_client=(0, 196, 0, 114), dim_client=(196, 114), coords_win=(1257, 1453, 919, 1033), dim_win=(196, 114), class_name='WindowsForms10.Window.20808.app.0.2780b98_r6_ad1', path='C:\\Program Files\\Greenshot\\Greenshot.exe'),
+# ...
+######################################################
+res=group_windows_by_coords_client()
+pprint(res,width=25, compact=True)
+# ...
+# (0,
+#   1,
+#   0,
+#   1): [WindowInfo(pid=4264, title='GDI+ Hook Window Class', windowtext='G', hwnd=1973524, length=2, tid=18104, status='invisible', coords_client=(0, 1, 0, 1), dim_client=(1, 1), coords_win=(0, 1, 0, 1), dim_win=(1, 1), class_name='GDI+ Hook Window Class', path='C:\\Program Files\\Just Great Software\\RegexBuddy 4\\RegexBuddy4.exe'), WindowInfo(pid=7408, title='GDI+ Hook Window Class', windowtext='G', hwnd=196686, length=2, tid=7712, status='invisible', coords_client=(0, 1, 0, 1), dim_client=(1, 1), coords_win=(0, 1, 0, 1), dim_win=(1, 1), class_name='GDI+ Hook Window Class', path='C:\\Program Files (x86)\\ClipAngel 1.94\\ClipAngel.exe'), WindowInfo(pid=8188, title='GDI+ Hook Window Class', windowtext='G', hwnd=660968, length=2, tid=16892, status='invisible', coords_client=(0, 1, 0, 1), dim_client=(1, 1), coords_win=(0, 1, 0, 1), dim_win=(1, 1), class_name='GDI+ Hook Window Class', path='C:\\Windows\\explorer.exe'), WindowInfo(pid=11824, title='GDI+ Hook Window Class', windowtext='G', hwnd=268808, length=2, tid=1344, status='invisible', coords_client=(0, 1, 0, 1), dim_client=(1, 1), coords_win=(0, 1, 0, 1), dim_win=(1, 1), class_name='GDI+ Hook Window Class', path='C:\\Program Files\\Notepad++\\notepad++.exe'), WindowInfo(pid=18276, title='GDI+ Hook Window Class', windowtext='G', hwnd=203884, length=2, tid=16940, status='invisible', coords_client=(0, 1, 0, 1), dim_client=(1, 1), coords_win=(0, 1, 0, 1), dim_win=(1, 1), class_name='GDI+ Hook Window Class', path='C:\\Program Files\\Greenshot\\Greenshot.exe'), WindowInfo(pid=19288, title='GDI+ Hook Window Class', windowtext='G', hwnd=330702, length=2, tid=5068, status='invisible', coords_client=(0, 1, 0, 1), dim_client=(1, 1), coords_win=(0, 1, 0, 1), dim_win=(1, 1), class_name='GDI+ Hook Window Class', path='C:\\Program Files (x86)\\Microsoft\\Skype for Desktop\\Skype.exe'), WindowInfo(pid=19324, title='GDI+ Hook Window Class', windowtext='G', hwnd=658766, length=2, tid=3760, status='invisible', coords_client=(0, 1, 0, 1), dim_client=(1, 1), coords_win=(0, 1, 0, 1), dim_win=(1, 1), class_name='GDI+ Hook Window Class', path='C:\\Program Files (x86)\\Microsoft\\Skype for Desktop\\Skype.exe')],
+# ...
+######################################################
+res=group_windows_by_coords_win()
+pprint(res,width=25, compact=True)
+# ...
+# (1912, 3848, -8, 1088): [WindowInfo(pid=16160, title='SunAwtFrame', windowtext='Python Console - dfdir', hwnd=1840892, length=23, tid=7456, status='visible', coords_client=(0, 1921, 0, 1080), dim_client=(1921, 1080), coords_win=(1912, 3848, -8, 1088), dim_win=(1936, 1096), class_name='SunAwtFrame', path='C:\\Program Files\\JetBrains\\PyCharm Community Edition 2020.3\\bin\\pycharm64.exe'),
+#                          WindowInfo(pid=16160, title='SunAwtFrame', windowtext='dfdir – __init__.py Administrator', hwnd=529490, length=34, tid=7456, status='visible', coords_client=(0, 1921, 0, 1080), dim_client=(1921, 1080), coords_win=(1912, 3848, -8, 1088), dim_win=(1936, 1096), class_name='SunAwtFrame', path='C:\\Program Files\\JetBrains\\PyCharm Community Edition 2020.3\\bin\\pycharm64.exe'),
+#                          WindowInfo(pid=16160, title='SunAwtFrame', windowtext='stopjogo – gp7.py Administrator', hwnd=4459518, length=32, tid=7456, status='visible', coords_client=(0, 1921, 0, 1080), dim_client=(1921, 1080), coords_win=(1912, 3848, -8, 1088), dim_win=(1936, 1096), class_name='SunAwtFrame', path='C:\\Program Files\\JetBrains\\PyCharm Community Edition 2020.3\\bin\\pycharm64.exe')],
+# ...
+######################################################
+res=group_windows_by_dim_client()
+pprint(res,width=25, compact=True)
+# ...
+# (61, 4): [WindowInfo(pid=18276, title='WindowsForms10.Window.20808.app.0.2780b98_r6_ad1', windowtext='', hwnd=466062, length=1, tid=14100, status='invisible', coords_client=(0, 61, 0, 4), dim_client=(61, 4), coords_win=(1730, 1791, 669, 673), dim_win=(61, 4), class_name='WindowsForms10.Window.20808.app.0.2780b98_r6_ad1', path='C:\\Program Files\\Greenshot\\Greenshot.exe'),
+#           WindowInfo(pid=18276, title='WindowsForms10.Window.20808.app.0.2780b98_r6_ad1', windowtext='', hwnd=531600, length=1, tid=14100, status='invisible', coords_client=(0, 61, 0, 4), dim_client=(61, 4), coords_win=(1730, 1791, 719, 723), dim_win=(61, 4), class_name='WindowsForms10.Window.20808.app.0.2780b98_r6_ad1', path='C:\\Program Files\\Greenshot\\Greenshot.exe')],
+# (67, 20): [WindowInfo(pid=8188, title='tooltips_class32', windowtext='', hwnd=65862, length=1, tid=8200, status='invisible', coords_client=(0, 67, 0, 20), dim_client=(67, 20), coords_win=(1740, 1807, 1049, 1069), dim_win=(67, 20), class_name='tooltips_class32', path='C:\\Windows\\explorer.exe')],
+# ...
+######################################################
+res=group_windows_by_dim_win()
+pprint(res,width=25, compact=True)
+# ...
+# (1936, 1096): [WindowInfo(pid=16160, title='SunAwtFrame', windowtext='Python Console - dfdir', hwnd=1840892, length=23, tid=7456, status='visible', coords_client=(0, 1921, 0, 1080), dim_client=(1921, 1080), coords_win=(1912, 3848, -8, 1088), dim_win=(1936, 1096), class_name='SunAwtFrame', path='C:\\Program Files\\JetBrains\\PyCharm Community Edition 2020.3\\bin\\pycharm64.exe'),
+#                WindowInfo(pid=16160, title='SunAwtFrame', windowtext='stopjogo – gp7.py Administrator', hwnd=4459518, length=32, tid=7456, status='visible', coords_client=(0, 1921, 0, 1080), dim_client=(1921, 1080), coords_win=(1912, 3848, -8, 1088), dim_win=(1936, 1096), class_name='SunAwtFrame', path='C:\\Program Files\\JetBrains\\PyCharm Community Edition 2020.3\\bin\\pycharm64.exe')],
+# (3840, 1080): [WindowInfo(pid=8188, title='Progman', windowtext='Program Manager', hwnd=131422, length=16, tid=6272, status='visible', coords_client=(0, 3840, 0, 1080), dim_client=(3840, 1080), coords_win=(0, 3840, 0, 1080), dim_win=(3840, 1080), class_name='Progman', path='C:\\Windows\\explorer.exe')],
+# ...
+######################################################
+res=group_windows_by_path()
+pprint(res,width=25, compact=True)
+
+# ...
+# 'C:\\Windows\\System32\\notepad.exe': [WindowInfo(pid=7708, title='IME', windowtext='Default IME', hwnd=6621606, length=12, tid=18480, status='invisible', coords_client=(0, 0, 0, 0), dim_client=(0, 0), coords_win=(0, 0, 0, 0), dim_win=(0, 0), class_name='IME', path='C:\\Windows\\System32\\notepad.exe'),
+#                                        WindowInfo(pid=7708, title='MSCTFIME UI', windowtext='MSCTFIME UI', hwnd=3016006, length=12, tid=18480, status='invisible', coords_client=(0, 0, 0, 0), dim_client=(0, 0), coords_win=(0, 0, 0, 0), dim_win=(0, 0), class_name='MSCTFIME UI', path='C:\\Windows\\System32\\notepad.exe'),
+#                                        WindowInfo(pid=7708, title='Notepad', windowtext='*Untitled - Notepad', hwnd=3998632, length=20, tid=18480, status='visible', coords_client=(0, 1022, 0, 578), dim_client=(1022, 578), coords_win=(242, 1280, 130, 767), dim_win=(1038, 637), class_name='Notepad', path='C:\\Windows\\System32\\notepad.exe')],
+# 'C:\\Windows\\System32\\rundll32.exe': [WindowInfo(pid=6652, title='IME', windowtext='Default IME', hwnd=65686, length=12, tid=6656, status='invisible', coords_client=(0, 0, 0, 0), dim_client=(0, 0), coords_win=(0, 0, 0, 0), dim_win=(0, 0), class_name='IME', path='C:\\Windows\\System32\\rundll32.exe'),
+#                                         WindowInfo(pid=6652, title='RunDLL', windowtext='', hwnd=1376404, length=1, tid=6656, status='invisible', coords_client=(0, 0, 0, 0), dim_client=(0, 0), coords_win=(78, 94, 78, 94), dim_win=(16, 16), class_name='RunDLL', path='C:\\Windows\\System32\\rundll32.exe'),
+#                                         WindowInfo(pid=6652, title='rxDiagRuntimePumpWindowClass', windowtext='RxDiag Message Pump 2.1 Nov 23 2021 07:27:35', hwnd=65688, length=45, tid=6656, status='invisible', coords_client=(0, 360, 0, 57), dim_client=(360, 57), coords_win=(300, 680, 300, 400), dim_win=(380, 100), class_name='rxDiagRuntimePumpWindowClass', path='C:\\Windows\\System32\\rundll32.exe')],
+# ...
+######################################################
+res=group_windows_by_pid()
+pprint(res,width=25, compact=True)
+
+# ...
+# 3396: [WindowInfo(pid=3396, title='NVSVC64.DLL', windowtext='NvSvc', hwnd=197238, length=6, tid=9536, status='invisible', coords_client=(0, 1424, 0, 728), dim_client=(1424, 728), coords_win=(208, 1648, 208, 975), dim_win=(1440, 767), class_name='NVSVC64.DLL', path='C:\\Windows\\System32\\DriverStore\\FileRepository\\nv_dispi.inf_amd64_c0e159863e7afdde\\Display.NvContainer\\NVDisplay.Container.exe'),
+#        WindowInfo(pid=3396, title='NvContainerWindowClass00000D44', windowtext='NvContainerWindowClass00000D44', hwnd=65632, length=31, tid=3400, status='invisible', coords_client=(0, 0, 0, 0), dim_client=(0, 0), coords_win=(0, 0, 0, 0), dim_win=(0, 0), class_name='NvContainerWindowClass00000D44', path='C:\\Windows\\System32\\DriverStore\\FileRepository\\nv_dispi.inf_amd64_c0e159863e7afdde\\Display.NvContainer\\NVDisplay.Container.exe'),
+#        WindowInfo(pid=3396, title='UxdService', windowtext='UxdService', hwnd=131560, length=11, tid=9520, status='invisible', coords_client=(0, 1424, 0, 728), dim_client=(1424, 728), coords_win=(182, 1622, 182, 949), dim_win=(1440, 767), class_name='UxdService', path='C:\\Windows\\System32\\DriverStore\\FileRepository\\nv_dispi.inf_amd64_c0e159863e7afdde\\Display.NvContainer\\NVDisplay.Container.exe')],
+# 3588: [WindowInfo(pid=3588, title='IME', windowtext='Default IME', hwnd=527634, length=12, tid=17620, status='invisible', coords_client=(0, 0, 0, 0), dim_client=(0, 0), coords_win=(0, 0, 0, 0), dim_win=(0, 0), class_name='IME', path='C:\\Program Files (x86)\\Microsoft\\Skype for Desktop\\Skype.exe'),
+#        WindowInfo(pid=3588, title='crashpad_SessionEndWatcher', windowtext='', hwnd=986134, length=1, tid=17620, status='invisible', coords_client=(0, 130, 0, 10), dim_client=(130, 10), coords_win=(0, 136, 0, 39), dim_win=(136, 39), class_name='crashpad_SessionEndWatcher', path='C:\\Program Files (x86)\\Microsoft\\Skype for Desktop\\Skype.exe')],
+# ...
+######################################################
+res=group_windows_by_status()
+pprint(res,width=25, compact=True)
+
+# ...
+#{'invisible': [WindowInfo(pid=648, title='COMTASKSWINDOWCLASS', windowtext='Task Host Window', hwnd=131108, length=17, tid=688, status='invisible', coords_client=(0, 120, 0, 0), dim_client=(120, 0), coords_win=(0, 136, 0, 39), dim_win=(136, 39), class_name='COMTASKSWINDOWCLASS', path='C:\\Windows\\System32\\taskhostw.exe'),
+#               WindowInfo(pid=648, title='CicLoaderWndClass', windowtext='', hwnd=65722, length=1, tid=700, status='invisible', coords_client=(0, 120, 0, 0), dim_client=(120, 0), coords_win=(0, 136, 0, 39), dim_win=(136, 39), class_name='CicLoaderWndClass', path='C:\\Windows\\System32\\taskhostw.exe'),
+# ...
+######################################################              
+
+res=group_windows_by_tid()
+pprint(res,width=25, compact=True)
+# ...
+# 19160: [WindowInfo(pid=18720, title='IME', windowtext='Default IME', hwnd=1252582, length=12, tid=19160, status='invisible', coords_client=(0, 0, 0, 0), dim_client=(0, 0), coords_win=(0, 0, 0, 0), dim_win=(0, 0), class_name='IME', path='C:\\Windows\\System32\\conhost.exe')],
+# 20820: [WindowInfo(pid=1664, title='Chrome_WidgetWin_0', windowtext='', hwnd=3481304, length=1, tid=20820, status='invisible', coords_client=(0, 0, 0, 0), dim_client=(0, 0), coords_win=(0, 0, 0, 0), dim_win=(0, 0), class_name='Chrome_WidgetWin_0', path='C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'),
+#         WindowInfo(pid=1664, title='IME', windowtext='Default IME', hwnd=4396660, length=12, tid=20820, status='invisible', coords_client=(0, 0, 0, 0), dim_client=(0, 0), coords_win=(0, 0, 0, 0), dim_win=(0, 0), class_name='IME', path='C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe')]}
+# ...
+######################################################              
+res=group_windows_by_title()
+pprint(res,width=25, compact=True)
+# ...
+# '_SearchEditBoxFakeWindow': [WindowInfo(pid=8188, title='_SearchEditBoxFakeWindow', windowtext='', hwnd=2039638, length=1, tid=14128, status='invisible', coords_client=(0, 0, 0, 0), dim_client=(0, 0), coords_win=(0, 0, 0, 0), dim_win=(0, 0), class_name='_SearchEditBoxFakeWindow', path='C:\\Windows\\explorer.exe'),
+#                              WindowInfo(pid=8188, title='_SearchEditBoxFakeWindow', windowtext='', hwnd=2825750, length=1, tid=4980, status='invisible', coords_client=(0, 0, 0, 0), dim_client=(0, 0), coords_win=(0, 0, 0, 0), dim_win=(0, 0), class_name='_SearchEditBoxFakeWindow', path='C:\\Windows\\explorer.exe'),
+#                              WindowInfo(pid=18984, title='_SearchEditBoxFakeWindow', windowtext='', hwnd=266452, length=1, tid=15264, status='invisible', coords_client=(0, 0, 0, 0), dim_client=(0, 0), coords_win=(0, 0, 0, 0), dim_win=(0, 0), class_name='_SearchEditBoxFakeWindow', path='C:\\Windows\\explorer.exe')],
+# 'crashpad_SessionEndWatcher': [WindowInfo(pid=3588, title='crashpad_SessionEndWatcher', windowtext='', hwnd=986134, length=1, tid=17620, status='invisible', coords_client=(0, 130, 0, 10), dim_client=(130, 10), coords_win=(0, 136, 0, 39), dim_win=(136, 39), class_name='crashpad_SessionEndWatcher', path='C:\\Program Files (x86)\\Microsoft\\Skype for Desktop\\Skype.exe'),
+#                                WindowInfo(pid=12872, title='crashpad_SessionEndWatcher', windowtext='', hwnd=464830, length=1, tid=12688, status='invisible', coords_client=(0, 130, 0, 10), dim_client=(130, 10), coords_win=(0, 136, 0, 39), dim_win=(136, 39), class_name='crashpad_SessionEndWatcher', path='C:\\Program Files\\Krisp\\WebView2\\msedgewebview2.exe'),
+#                                WindowInfo(pid=13436, title='crashpad_SessionEndWatcher', windowtext='', hwnd=4194640, length=1, tid=11620, status='invisible', coords_client=(0, 130, 0, 10), dim_client=(130, 10), coords_win=(0, 136, 0, 39), dim_win=(136, 39), class_name='crashpad_SessionEndWatcher', path='C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'),
+#                               WindowInfo(pid=20928, title='crashpad_SessionEndWatcher', windowtext='', hwnd=464914, length=1, tid=14920, status='invisible', coords_client=(0, 130, 0, 10), dim_client=(130, 10), coords_win=(0, 136, 0, 39), dim_win=(136, 39), class_name='crashpad_SessionEndWatcher', path='C:\\Program Files\\Krisp\\WebView2\\msedgewebview2.exe')],
+# ...
+######################################################    
+
+res=group_windows_by_windowtext()
+from pprint import pprint
+pprint(res,width=25, compact=True)
+# ...
+# 'GitHub Desktop': [WindowInfo(pid=17556, title='Chrome_WidgetWin_1', windowtext='GitHub Desktop', hwnd=5966550, length=15, tid=12196, status='visible', coords_client=(0, 960, 0, 660), dim_client=(960, 660), coords_win=(669, 1629, 123, 783), dim_win=(960, 660), class_name='Chrome_WidgetWin_1', path='C:\\Users\\Gamer\\AppData\\Local\\GitHubDesktop\\app-3.1.4\\GitHubDesktop.exe')],
+# 'Greenshot - the revolutionary screenshot utility': [WindowInfo(pid=18276, title='WindowsForms10.Window.8.app.0.2780b98_r6_ad1', windowtext='Greenshot - the revolutionary screenshot utility', hwnd=597088, length=49, tid=14100, status='invisible', coords_client=(0, 0, 0, 0), dim_client=(0, 0), coords_win=(-32000, -31840, -32000, -31972), dim_win=(160, 28), class_name='WindowsForms10.Window.8.app.0.2780b98_r6_ad1', path='C:\\Program Files\\Greenshot\\Greenshot.exe')],
+# 'Hidden Window': [WindowInfo(pid=10876, title='HwndWrapper[Krisp.exe;;773b0141-7627-46a3-8fd7-70ae4b8b3669]', windowtext='Hidden Window', hwnd=399360, length=14, tid=19056, status='invisible', coords_client=(0, 1424, 0, 728), dim_client=(1424, 728), coords_win=(156, 1596, 156, 923), dim_win=(1440, 767), class_name='HwndWrapper[Krisp.exe;;773b0141-7627-46a3-8fd7-70ae4b8b3669]', path='C:\\Program Files\\Krisp\\Krisp.exe'),
+#                   WindowInfo(pid=10876, title='HwndWrapper[Krisp.exe;;c309ef14-1945-423d-9140-f7e8760938b5]', windowtext='Hidden Window', hwnd=395536, length=14, tid=19056, status='invisible', coords_client=(0, 1424, 0, 728), dim_client=(1424, 728), coords_win=(208, 1648, 208, 975), dim_win=(1440, 767), class_name='HwndWrapper[Krisp.exe;;c309ef14-1945-423d-9140-f7e8760938b5]', path='C:\\Program Files\\Krisp\\Krisp.exe')],
+# ...
+######################################################    
+v = [r"baba", r"baba", r"bubu", 3,4,5]
+print(group_vars_by_hash(seq=v, continue_on_exceptions=True, withindex=False, withvalue=True))
+# output: {-7914231873912742807: ['baba', 'baba'], -6908341703943681820: ['bubu'], 3: [3], 4: [4], 5: [5]}
+
+print(group_vars_by_hash(seq=v, continue_on_exceptions=True, withindex=True, withvalue=True))
+# output: {-7914231873912742807: [(0, 'baba'), (1, 'baba')], -6908341703943681820: [(2, 'bubu')], 3: [(3, 3)], 4: [(4, 4)], 5: [(5, 5)]}
+
+######################################################    
+files = [r"F:\00401 - Copy.jpg", r"F:\00401.jpg", r"F:\bw_pic.png", ]
+group_files_by_hash(seq=files,continue_on_exceptions=True, withindex=True, withvalue=True)
+# {'6d7ca5ec1deb81e4a127719a7b1b3328': ['F:\\00401 - Copy.jpg', 'F:\\00401.jpg'],
+#  'fab1479078ac767ec468b28425f5069a': ['F:\\bw_pic.png']}
+######################################################
+```
+## groupby stuff 
 
 ```python
 

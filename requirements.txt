@@ -1,4 +1,5 @@
 check_if_nan
+ctypes_window_info
 divide_region_into_rectangles
 flatten_any_dict_iterable_or_whatsoever
 flatten_everything
@@ -10,3 +11,4 @@ numpy
 rect_intersection
 regex
 tolerant_isinstance
+xxhash
