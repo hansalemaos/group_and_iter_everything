@@ -1,3 +1,4 @@
+import binascii
 import codecs
 import collections
 import colorsys
@@ -10,26 +11,38 @@ import os
 import pathlib
 import random
 import re
+import struct
 import sys
 from ast import literal_eval
 from collections import defaultdict, OrderedDict, deque
-from functools import reduce
+from copy import deepcopy
+from functools import reduce, partial
 from math import sqrt, floor, ceil
 from urllib import parse
 import numpy as np
 import numexpr
 import regex
+import threadingbatch
+import unicodedata
 import xxhash
 from check_if_nan import is_nan
 from ctypes_window_info import get_window_infos
+from dict_merger_keep_all import dict_merger
 from divide_region_into_rectangles import divide_region_into_rect, cropimage
 from flatten_any_dict_iterable_or_whatsoever import fla_tu
 from flatten_everything import flatten_everything
+from flexible_partial import FlexiblePartialOwnName
+from get_consecutive_filename import get_free_filename
+from hexintcalc import number_to_int, number_to_hex
 from intersection_grouper import group_lists_with_intersections
 from isiter import isiter
+from kthread_sleep import sleep
 from locate_pixelcolor import search_colors
+from nestednop import NestedNop
 from rect_intersection import intersects
 from tolerant_isinstance import isinstance_tolerant
+it = sys.modules[__name__]
+nested_dict = lambda: defaultdict(nested_dict)
 
 
 @functools.lru_cache
@@ -1549,3 +1562,571 @@ def group_vars_by_hash(
         withindex=withindex,
         withvalue=withvalue,
     )
+
+def boli(*args):
+    condi = args[-1]
+    i = args[:-1]
+    for p in itertools.product(*i):
+        if condi():
+            return
+        yield p
+
+
+
+def repeat_iterable(iter_, repeats):
+    resax = []
+    _ = [[resax.append(x) for y in range(repeats)] for x in iter_]
+    return resax
+
+
+def iter_get_random_values_with_max_rep(list_, howmany, maxrep):
+    resi = []
+    resistr = []
+    numbers = list_
+    alldi = {f"{repr(x)}{x}": x for x in numbers}
+    numbersdi = {}
+    for ma in range(maxrep):
+        for key, item in alldi.items():
+            numbersdi[f"{key}{ma}"] = item
+    if (h := len(numbersdi.keys())) < howmany:
+        raise ValueError(f"choices: {howmany} / unique: {h}")
+    while len(resi) <= howmany - 1:
+        [(resi.append(numbersdi[g]), resistr.append(g)) for x in range(len(numbers)) if len(resi) <= howmany - 1 and (
+            g := random.choice(tuple(set(numbersdi.keys()) - set(resistr)))) not in resistr]
+    return resi
+
+
+def iter_get_random_not_repeating_values(list_, howmany):
+    resi = []
+    resistr = []
+    numbers = list_
+    numbersdi = {f"{repr(x)}{x}": x for x in numbers}
+    if (h := len(numbersdi.keys())) < howmany:
+        raise ValueError(f"choices: {howmany} / unique: {h}")
+    while len(resi) <= howmany - 1:
+        [(resi.append(numbersdi[g]), resistr.append(g)) for x in range(len(numbers)) if len(resi) <= howmany - 1 and (
+            g := random.choice(tuple(set(numbersdi.keys()) - set(resistr)))) not in resistr]
+    return resi
+
+def sort_dict(di):
+    return {k: v for k, v in sorted(di.items(), key=lambda x: x[0])}
+
+def cycle_list_until_every_list_fits(*args, maxresults=5, append=False, ):
+    args = list(reversed(sorted(args, key=len)))
+    lenargs = [len(x) for x in args]
+    lenargsmax = max(lenargs)
+    lenargs_ = len(lenargs)
+    a = []
+
+    co = 0
+    done = False
+    while not done:
+        co += 1
+        for i in range(2, math.prod(lenargs)):
+
+            if len([co * i for co in lenargs if co * i % i == 0]) == lenargs_:
+                a.append(co * i)
+            if len(a) >= maxresults *4:
+                done = True
+                break
+    a.sort()
+    a = list(reversed(a))
+    resusa = {}
+    for so in a:
+
+        resusatemp = defaultdict(list)
+        for ii, ba in enumerate(args):
+            for i in range(lenargsmax * so // len(ba)):
+                if append:
+                    resusatemp[ii].append(ba)
+                else:
+                    resusatemp[ii].extend(ba)
+        resusa[lenargsmax * so] = resusatemp
+    resusa=sort_dict(resusa)
+    resusa2=resusa.copy()
+    gop=[]
+    for key, item in resusa.items():
+        allsi = []
+        for key2, item2 in item.items():
+            aax = tuple(flatten_everything(item2))
+            allsi.append(len(aax))
+        if len(set(allsi)) != 1:
+            del resusa2[key]
+        else:
+            gop.append(key)
+            if len(gop) >= maxresults:
+                break
+
+    for key in list(resusa2.keys()):
+        if key not in gop:
+            del resusa2[key]
+    return convert_to_normal_dict(resusa2)
+
+
+def _base_multiply_iter(*args, maxresults=2):
+    lenargs = [len(x) for x in args]
+    lenargsmaxprod = math.prod(lenargs)
+    uniquevals = list(set(lenargs))
+    lenargscyc = [tuple([x for p in range(lenargsmaxprod // x)]) for x in uniquevals]
+    didi = defaultdict(list)
+
+    goodresis = []
+    it.maxresults = -1
+    it.goodresis = maxresults
+    cond = lambda: it.maxresults == it.goodresis
+    for i, l in boli(range(2, lenargsmaxprod), lenargscyc, cond):
+        if len(l) % i == 0:
+            indid = i * l[0]
+            didi[indid].append((i, l[0], indid))
+            if len(didi[indid]) == uniquevals:
+                goodresis.append(didi[indid])
+                it.goodresis = len(goodresis)
+
+    validones = []
+    for key, item in didi.items():
+        if len(item) == len(uniquevals):
+            validones.append(item)
+
+    nested_dictl = nested_dict()
+    for li in validones:
+        for li2 in li:
+            nested_dictl[li2[-1]][li2[-2]] = li2[0]
+    it.maxresults = 0
+    brea = lambda: it.maxresults >= maxresults * len(args)
+
+    newi = []
+    for key_item, a in boli(nested_dictl.items(), args, brea):
+        key, item = key_item
+        newitmpstart = []
+        for naw in range(key // len(a)):
+            newitmp = []
+            for aa in a:
+                newitmp.append(aa)
+            newitmpstart.append(newitmp.copy())
+        newi.append(newitmpstart.copy())
+        it.maxresults += 1
+    it.maxresults = 0
+    return nested_dictl.copy(), newi.copy()
+
+
+def iter_adjust_list_same_common_size_without_cutting(*args):
+    maxresults = 1
+    __, er = _base_multiply_iter(*args, maxresults=maxresults)
+    alli = []
+    _ = [alli[-1].append(list(p)) if ini2 % len(args) != 0 else (alli.append([]), alli[-1].append(list(p))) for ini2, p
+        in ((ini, (itertools.zip_longest(*err))) for ini, err in enumerate(er))]
+    for ini2, a in enumerate(alli):
+        for ini3, aa in enumerate(a):
+            yield ini2, ini3, aa
+
+
+def iter_adjust_list_same_common_size_without_cutting_zipped(*args):
+    vad = iter_adjust_list_same_common_size_without_cutting(*args)
+    for indexno, itemno, multiplicated_item in vad:
+        yield indexno, itemno, [x for x in itertools.zip_longest(*multiplicated_item)]
+
+
+def iter_adjust_list_next_to_each_other_zipped(*args):
+    vad2 = iter_adjust_list_same_common_size_without_cutting_zipped(*args)
+
+    alltog = []
+    for v in vad2:
+        if v[1] == 0:
+            if len(alltog) == 0:
+                alltog.extend(v[-1])
+                continue
+            yield alltog.copy()
+            alltog.clear()
+        alltog.extend(v[-1])
+    yield alltog
+
+
+def iter_transpose_ajusted_list(*args):
+    vad3 = (iter_adjust_list_next_to_each_other_zipped(*args))
+    for multiplicated_item in vad3:
+
+        for y in  [x for x in zip(*multiplicated_item)]:
+            yield y
+
+
+def iter_equilibrate_zip(*args, maxresults=1):
+    _, er = _base_multiply_iter(*args, maxresults=maxresults)
+    alli = []
+    __ = [alli[-1].append(list(p)) if ini2 % len(args) != 0 else (alli.append([]), alli[-1].append(list(p))) for ini2, p
+          in ((ini, (itertools.zip_longest(*err))) for ini, err in enumerate(er))]
+
+    defa = defaultdict(list)
+    diva = sum([1 for x in flatten_everything(alli)])
+    for ini, a in enumerate(alli):
+        for aa in a:
+            for aaa in (aa):
+                for ini2, ab in enumerate(aaa):
+                    ste = diva // len(aaa)
+                    defa[ste * (ini2 + 1)].append(aaa[ini2])
+    wholeliit = []
+    _ = {k: wholeliit.extend(v) for k, v in sorted(defa.items(), key=lambda x: x[0])}
+    return iter(wholeliit)
+
+
+duplicde = lambda l2: list(
+
+    i[1] for i in {f'{k}{repr(k)}': k for k in l2}.items()
+
+)
+
+
+def int_equilibrate_each_value_zip_keep_list(*args):
+    _, er = _base_multiply_iter(*args)
+    alli = []
+    __ = [alli[-1].append(list(p)) if ini2 % len(args) != 0 else (alli.append([]), alli[-1].append(list(p))) for ini2, p
+          in ((ini, (itertools.zip_longest(*err))) for ini, err in enumerate(er))]
+
+    defa = defaultdict(list)
+    diva = sum([1 for x in flatten_everything(alli)])
+    for ini, a in enumerate(alli):
+        for aa in a:
+            for aaa in aa:
+                for ini2, ab in enumerate(aaa):
+                    ste = diva // len(aaa)
+
+                    defa[ste * (ini2 + 1)].append(([x[0] for x in aa]))
+                    defa[ste * (ini2 + 1)] = duplicde(defa[ste * (ini2 + 1)])
+    wholeliit = []
+    _ = {k: wholeliit.extend(v) for k, v in sorted(defa.items(), key=lambda x: x[0])}
+    return wholeliit
+
+
+def pvas(**kwargs):
+    if "print_vars" in kwargs:
+        if kwargs["print_vars"]:
+            return True
+    return False
+
+
+def bol(*args, **kwargs):
+    if pvas(**kwargs):
+        print(kwargs)
+    condi = args[-1]
+    i = args[:-1]
+    co = 0
+    couinat = "counter" in kwargs
+    for p in itertools.product(*i):
+        newva = {k: getattr(it, k) for k, v in kwargs["input_vars"].items()}
+        if pvas(**kwargs):
+            print(newva)
+
+        if condi(**newva):
+            return
+        yield p
+
+        co += 1
+        if couinat:
+            setattr(it, kwargs["counter"], co)
+
+
+def clean_vars(**kwargs):
+    for key in kwargs["input_vars"]:
+        try:
+            if hasattr(it, key):
+                delattr(it, key)
+        except Exception as fe:
+            continue
+
+
+def iterrate_with_break_condition(f_py=None):
+    assert callable(f_py) or f_py is None
+
+    def _decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            if "delete_old" in kwargs:
+                if kwargs["delete_old"]:
+                    clean_vars(**kwargs)
+            for key, item in kwargs["input_vars"].items():
+                setattr(it, key, item)
+            if "counter" in kwargs:
+                setattr(it, kwargs["counter"], 0)
+            for i in func(*args, **kwargs):
+                yield i
+            rval = dict()
+            if "output_var" in kwargs:
+                outkey = kwargs["output_var"]
+                for key, item in kwargs["input_vars"].items():
+                    rval[key] = getattr(it, key)
+                setattr(it, outkey, rval.copy())
+            if "clean_vars" in kwargs:
+                if kwargs["clean_vars"]:
+                    clean_vars(**kwargs)
+            return rval
+
+        return wrapper
+
+    return _decorator(f_py) if callable(f_py) else _decorator
+
+
+@iterrate_with_break_condition
+def iter_with_breaking_condition(*args, **kwargs):
+    for i in bol(*args, **kwargs):
+        yield i
+
+
+def iter_sorted_dict_keys(di):
+    return iter({k: v for k, v in sorted(di.items(), key=lambda x: x[0])}.items())
+
+
+def iter_sorted_dict_keys_values(di):
+    return iter({k: v for k, v in sorted(di.items(),
+        key=lambda x: str(x[1]) if not isinstance_tolerant(x[1], (int, float, str)) else x[1], )}.items())
+
+
+def iter_normalized_list_of_lists(l, fillv=None):
+    ml = max([len(x) for x in l])
+    nl = []
+    _ = [x for x in l if (nl.append((x + ([fillv] * (ml - len(x))))))]
+    return iter(nl)
+
+
+def iter_transposed_list_of_lists(l):
+    return iter([list(x) for x in zip(*l)])
+
+
+
+def iter_droped_nested_duplicates(l):
+    return iter(i[1] for i in {f"{k}{repr(k)}": k for k in l}.items())
+
+
+def groupby_unicode_name(text, continue_on_exceptions=True, withindex=False, withvalue=True):
+    text = list(text)
+    return groupBy(key=lambda x: unicodedata.name(x), seq=text, continue_on_exceptions=continue_on_exceptions,
+        withindex=withindex, withvalue=withvalue, )
+
+
+def iter_join_dicts_no_loss(*args):
+    for item, keys, in fla_tu(dict_merger(args)):
+        yield keys, item
+
+
+def shuffle_dict(dictionary):
+    keys = list(dictionary.keys())
+    random.shuffle(keys)
+    dictionary2 = dict()
+    for key in keys:
+        dictionary2.update({key: dictionary[key]})
+    return dictionary2
+
+
+def iter_shuffle_copied_list(l):
+    l1 = deepcopy(l)
+    random.shuffle(l1)
+    return l1
+
+
+def iter_get_free_filenames(folder, fileextension, leadingzeros):
+    while True:
+        yield get_free_filename(folder=folder, fileextension=fileextension, leadingzeros=leadingzeros)
+
+
+def iter_log_split(*args):
+    def logsplit(lst):
+        # https://stackoverflow.com/a/35756376/15096247
+        iterator = iter(lst)
+        for n, e in enumerate(iterator):
+            yield itertools.chain([e], itertools.islice(iterator, n))
+
+    if len(args) > 1:
+        for x in logsplit(zip(*args)):
+            yield list(x)
+    else:
+        for x in logsplit(args[0]):
+            yield list(x)
+
+
+def execute_as_thread(no_fu_args_kwargs, wait_to_complete=True, return_dict=True, threadtlimit=5,
+        # number of simultaneously executed threads
+        timeout=4,  # call Kthread.kill after n seconds
+        sleepafterkill=0.02,  # sleep time after calling Kthread.kill
+        sleepafterstart=0.02,  # sleep time after starting a thread
+        ignore_exceptions=False, verbose=False, ):
+    flist = []
+    for no, fu, ar, kw in no_fu_args_kwargs:  # creating 20 function calls
+        flist.append([threadingbatch.thread_capture(FlexiblePartialOwnName(fu, f"{str(no)}", True)),  # function
+            ar,  # args
+            kw,  # kwargs
+            f"{str(no)}",
+            # key in threadingbatch.results (must be unique and type str), the key can't have the name "done"
+        ])
+    flistt = threadingbatch.start_all_threads(flist, threadtlimit=threadtlimit,
+        # number of simultaneously executed threads
+        timeout=timeout,  # call Kthread.kill after n seconds
+        sleepafterkill=sleepafterkill,  # sleep time after calling Kthread.kill
+        sleepafterstart=sleepafterstart,  # sleep time after starting a thread
+        ignore_exceptions=ignore_exceptions, verbose=verbose, )
+    # threadingbatch.thread_capture(fu, *args,**kwargs)
+    if wait_to_complete:
+        while not threadingbatch.results[
+            "done"]:  # when all threads are done, threadingbatch.results['done'] changes to True
+
+            pass
+            sleep(0.032)
+
+        if return_dict:
+            try:
+                xa = deepcopy(threadingbatch.results)
+                threadingbatch.results = nested_dict()
+                return xa
+            except Exception as fe:
+                return threadingbatch.results
+
+def get_lowest_common_multipl(*args,maxresults):
+    ee, _ = _base_multiply_iter(*args, maxresults=maxresults)
+    return ee
+
+def get_common_division_multiplier(*args):
+    if isinstance_tolerant(args[0], int):
+        args = [list(range(x)) for x in args]
+    di=get_lowest_common_multipl(*args,maxresults=0)
+    return convert_to_normal_dict(di)
+
+def iter_nested_dict_to_edit(di):
+    nest = NestedNop(di)
+    for key, item in nest.iterable_flat.items():
+        setvalue = reduce(operator.getitem, key[:-2], di)[key[-2]]
+        sa = partial(setvalue.__setitem__, key[-1])
+        yield key, item['get_value'](), sa
+
+
+def iter_search_sequence_numpy(arr, seq):
+
+    Na, Nseq = arr.size, seq.size
+    r_seq = np.arange(Nseq)
+    M = (arr[np.arange(Na-Nseq+1)[:,None] + r_seq] == seq).all(1)
+    if M.any() >0:
+        c1=np.convolve(M, np.ones((Nseq), dtype=np.uint8))
+        memstuffx = c1.astype(np.float32)
+        patternx = 0.1
+        varallx = np.array(patternx, dtype=np.float32)
+        wholedictx = {'memstuffx': memstuffx, 'varallx': varallx}
+        wholecommandx = '(memstuffx > varallx)'
+        exprex = numexpr.evaluate(wholecommandx, local_dict=wholedictx)
+        gefx = np.array(np.where(exprex)).T[::-1].flatten()
+        return gefx[::-1]
+    else:
+        return []         # No match found
+
+
+def iter_str2bin(binbytes, fill=2):
+    fst = b"%0" + str(fill).encode() + b"x"
+    return iter(fst % ord(c) for c in binbytes)
+
+
+def iter_int_to_hex(l):
+    return iter([number_to_hex(x) for x in l])
+def iter_hex_to_int(l):
+    return iter([number_to_int(x) for x in l])
+
+def hexptr2bin(hexptr):
+    return struct.pack("<L", hexptr)
+
+
+def iter_hexstrings2bin(patternlist):
+    for pattern in patternlist:
+        pattern = pattern.lower().replace("\\x", "")
+        pattern = pattern.replace('"', "")
+        pattern = pattern.replace("'", "")
+        pattern = pattern.replace('0x', '')
+        yield b"".join(
+            [binascii.a2b_hex(i + j) for i, j in zip(pattern[0::2], pattern[1::2])]
+        )
+
+def iter_string_to_utf16_byte(word):
+    def hex2bin_(pattern):
+        pattern = pattern.replace("\\x", "")
+        pattern = pattern.replace("\\X", "")
+        pattern = pattern.replace('"', "")
+        pattern = pattern.replace("'", "")
+        pattern = pattern.replace('0x', '')
+        pattern = pattern.replace('0X', '')
+        return b"".join(
+            [binascii.a2b_hex(i + j) for i, j in zip(pattern[0::2], pattern[1::2])]
+        )
+
+    wordlist_b = [hex2bin_(hex(x)[2:]) for x in word.encode("utf-16-le")]
+    word = b"".join(wordlist_b)
+    wordlist = [xd for xd in wordlist_b if xd != b""]
+    return word, wordlist,wordlist_b
+
+
+def iter_utf16bytestostring(l):
+    for b in l:
+        try:
+            yield b"".join([v + b"\x00" for v in b]).decode("utf-16-le")
+        except Exception:
+            yield b"".join([hexptr2bin(v)[:2] for v in b]).decode("utf-16-le")
+
+
+def iter_get_ascii_table():
+    for no in range(0, 255):
+        ashex = hex(no)
+        yield ashex.encode(), no, chr(no).encode()
+
+
+def iter_convert_np_array_to_v(a, contiguous=True):
+    if contiguous:
+        return np.ascontiguousarray(a.view(("V", 1)).reshape(len(a), -1))
+    else:
+        return a.view(("V", 1)).reshape(len(a), -1)
+
+def iter_split_with_np_in_n_slices(a, n=10):
+    try:
+        for aa in np.split(a, n):
+            yield aa
+    except Exception:
+        for aa in np.split(np.array(a), n):
+            yield aa
+
+def iter_split_with_np_in_pieces_of(a, n=10):
+    sp=len(a) // n
+    try:
+        for aa in np.split(a, sp):
+            yield aa
+    except Exception:
+        for aa in np.split(np.array(a), sp):
+            yield aa
+
+def iter_npapply_vetor_function(nparray, function, *args, **kwargs):
+    applyfunction = FlexiblePartialOwnName(function, '', True, *args, **kwargs, )
+
+    t_array = np.frompyfunc(applyfunction, 1, 1)
+
+    return iter(t_array(nparray))
+
+
+def iter_list_ljust_rjust(l, ljust=0, ljustchr=' ', rjust=0, rjustchr=' ', getmax=True):
+    ln=tuple((str(x) for x in l))
+    if r1:=isinstance_tolerant(ljust,None) or (r2:=isinstance_tolerant(rjust,None)):
+        if getmax:
+            ma = len(tuple(sorted(ln, key=lambda x: len(x)))[-1])
+
+            if r1:
+                ljust=ma
+            try:
+                if r2:
+                    rjust = ma
+            except Exception:
+                if isinstance_tolerant(rjust,None):
+                    rjust = ma
+    if rjust !=0:
+        ln = iter((x.rjust(rjust,rjustchr) for x in ln))
+    if ljust !=0:
+        ln = iter((x.ljust(ljust,ljustchr) for x in ln))
+    return ln
+
+def np_array_to_string(nparray, encoding="utf-8", errors="replace", replace0=True):
+    r = nparray.tobytes().decode(encoding, errors=errors)
+    if replace0:
+        return r.replace("\x00", "")
+    else: return r
+
+
+def iter_sort_by_item_pos(v,pos,fillvalue=''):
+    return sorted(v, key=lambda x: x[pos] if len(x) > pos else fillvalue)
