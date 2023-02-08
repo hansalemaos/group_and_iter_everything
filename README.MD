@@ -3,6 +3,777 @@
 ```python
 pip install group-and-iter-everything
 ```
+### update 2023-02-08 
+```python
+from group_and_iter_everything import *
+
+# sort dict keys
+print(dict(iter_sorted_dict_keys(di={1: 2, 11: 2, 2: 2})))
+# output: {1: 2, 2: 2, 11: 2}
+###########################################################
+# normalize list of lists (same length)
+l = [[1, 2, 3], [4, 5], [1]]
+print(list(iter_normalized_list_of_lists(l, fillv=None)))
+# output: [[1, 2, 3], [4, 5, None], [1, None, None]]
+###########################################################
+# transpose list (very useful for coordinates [x,y]])
+l = [(1, 2), (3, 4), (4, 5)]
+print(list(iter_transposed_list_of_lists(l)))
+
+l = [[1, 3, 4], [2, 4, 5]]
+print(list(iter_transposed_list_of_lists(l)))
+
+# output:
+# [[1, 3, 4], [2, 4, 5]]
+# [[1, 2], [3, 4], [4, 5]]
+###########################################################
+# Drop duplicates in nested lists
+l2 = [[1, 2], [1, 2], 7, [3, 8], [3, 8]]
+print(list(iter_droped_nested_duplicates(l2)))
+# output: [[1, 2], 7, [3, 8]]
+###########################################################
+# Sort dict by value
+di1 = {1: "bu", 11: 2.0, 2: "anna"}
+di2 = {1: "bu", 11: "bax", 2: "anna"}
+print(list(iter_sorted_dict_keys_values(di1)))
+print(list(iter_sorted_dict_keys_values(di2)))
+
+# output:
+# [(11, 2.0), (2, 'anna'), (1, 'bu')]
+# [(2, 'anna'), (11, 'bax'), (1, 'bu')]
+###########################################################
+# Group a text by Unicode names
+text = """Unidecode is not a replacement for fully supporting Unicode for strings in your program. There are a number of caveats that come with its use, especially when its output is directly visible to users. Please read the rest of this README before using Unidecode in your project.
+In most of examples listed above you could represent Unicode characters as ??? or \15BA\15A0\1610, to mention two extreme cases. But that’s nearly useless to someone who actually wants to read what the text says."""
+tu = groupby_unicode_name(
+    text, continue_on_exceptions=True, withindex=False, withvalue=True
+)
+print(tu)
+# output:
+# ....
+# 'LATIN SMALL LETTER B': ['b', 'b', 'b', 'b'],
+# 'LATIN SMALL LETTER V': ['v', 'v', 'v'],
+# 'LATIN SMALL LETTER W': ['w', 'w', 'w', 'w', 'w', 'w'],
+# 'COMMA': [',', ','],
+# 'LATIN CAPITAL LETTER P': ['P'],
+# 'LATIN CAPITAL LETTER R': ['R'],
+# ....
+###########################################################
+# Call different functions in a thread, and get the result as a dict.
+import requests
+
+def testx(
+    testnumber, *args, **kwargs
+):  # a threaded function must have *args, **kwargs and can't have the keyword argument _starttime.
+    # If your function doesn't have *args and **kwargs, add it.
+
+    print(f"start {testnumber}")
+    return random.randrange(1, 30)
+
+
+def reqd(
+    u, *args, **kwargs
+):  # don't forget: You have to add  *args, **kwargs to the threaded function
+    return requests.get(u)
+
+
+urls = [
+    "https://github.com/hansalemaos/a_pandas_ex_regex_enhancements#start-of-content",
+    "https://github.com/",
+]
+# This is how you have to build the list for Threading
+# (1, testx, ("halkl",), {"vds": 3})
+# 1 - name of the thread, must be unique!
+# testx - the function
+# ("halkl",) - args (if the function doesn't have args, use ()
+# {"vds": 3} - kwargs (if the function doesn't have kwargs, use {}
+no_fu_args_kwargs = [
+    (1, testx, ("halkl",), {"vds": 3}),
+    (2, testx, ("hxxalkl",), {"vxxds": 3}),
+]
+alle = len(no_fu_args_kwargs)
+for ini, i in enumerate(urls):  # appending other threads
+    no_fu_args_kwargs.append((alle + ini, reqd, (), {"u": i}))
+
+resi = execute_as_thread(
+    no_fu_args_kwargs,
+    wait_to_complete=True,
+    # recommended, if you don't want to wait the function returns None, but you can find your results in group_and_iter_everything.threadingbatch.results, once all threads are done, the key "done" will change to True
+    return_dict=True,  # Works only when wait_to_complete is True
+    threadtlimit=2,  # Limit of threads
+    # number of simultaneously executed threads
+    timeout=4,
+    # call Kthread.kill after n seconds, if your function uses sleep, it is better to use this sleep function: from kthread_sleep import sleep
+    sleepafterkill=0.02,  # sleep time after calling Kthread.kill # don't use 0.0
+    sleepafterstart=0.02,  # sleep time after starting a thread  # don't use 0.0
+    ignore_exceptions=False,  # You can go on when there are Exceptions
+    verbose=False,
+)
+
+# output:
+# resi
+# Out[3]:
+# defaultdict(<function threadingbatch.<lambda>()>,
+#             {'done': True,
+#              '3': defaultdict(<function threadingbatch.<lambda>()>,
+#                          {'results': <Response [200]>,
+#                           'realstart': 1675824200.253053}),
+#              '2': defaultdict(<function threadingbatch.<lambda>()>,
+#                          {'results': <Response [200]>,
+#                           'realstart': 1675824200.2320704}),
+#              '1': defaultdict(<function threadingbatch.<lambda>()>,
+#                          {'results': 18, 'realstart': 1675824200.1902106})})
+#
+#
+
+# Executing without waiting for the results:
+
+resi = execute_as_thread(
+    no_fu_args_kwargs,
+    wait_to_complete=False,
+    # you can find the results in group_and_iter_everything.threadingbatch.results, once all threads are done, the key "done" will change to True
+    return_dict=True,
+    threadtlimit=2,
+    timeout=4,
+    sleepafterkill=0.02,
+    sleepafterstart=0.02,
+    ignore_exceptions=False,
+    verbose=False,
+)
+
+# print(threadingbatch.results)
+#
+# Not finished yet ('done': False)
+#
+# defaultdict(<function <lambda> at 0x0000000012A134C0>, {'done': False, '3': defaultdict(<function <lambda> at 0x0000000012A134C0>, {'results': None, 'realstart': None}), '2': defaultdict(<function <lambda> at 0x0000000012A134C0>, {'results': None, 'realstart': None}), '1': defaultdict(<function <lambda> at 0x0000000012A134C0>, {'results': None, 'realstart': None})})
+###########################################################
+# rjust/ljust a list of strings
+
+text = """
+Read the running tests and linters section of our documentation to learn how to test your code. For cross-browser 
+""".split()
+list(
+    iter_list_ljust_rjust(
+        l=[1, 2] + text,  # can contain any dtype
+        ljust=None,  # if None and getmax is True -> the longest str will be used
+        ljustchr="-",  # fill with char
+        rjust=None,  # if None and getmax is True -> the longest str will be used
+        rjustchr="-",  # fill with char
+
+        getmax=True,
+    )
+)
+list(
+    iter_list_ljust_rjust(
+        l=[1, 2] + text, ljust=0, ljustchr="-", rjust=None, rjustchr="-", getmax=True
+    )
+)
+list(
+    iter_list_ljust_rjust(
+        l=[1, 2] + text, ljust=None, ljustchr="-", rjust=0, rjustchr="-", getmax=True
+    )
+)
+list(
+    iter_list_ljust_rjust(
+        l=[1, 2] + text, ljust=0, ljustchr="-", rjust=12, rjustchr="y", getmax=False
+    )
+)
+list(
+    iter_list_ljust_rjust(
+        l=[1, 2] + text, ljust=15, ljustchr="x", rjust=0, rjustchr="-", getmax=False
+    )
+)
+
+
+# output:
+# ['------------1', '------------2', '---------Read', '----------the', '------running', '--------tests', '----------and', '------linters', '------section', '-----------of', '----------our', 'documentation', '-----------to', '--------learn', '----------how', '-----------to', '---------test', '---------your', '--------code.', '----------For', 'cross-browser']
+# ['------------1', '------------2', '---------Read', '----------the', '------running', '--------tests', '----------and', '------linters', '------section', '-----------of', '----------our', 'documentation', '-----------to', '--------learn', '----------how', '-----------to', '---------test', '---------your', '--------code.', '----------For', 'cross-browser']
+# ['1------------', '2------------', 'Read---------', 'the----------', 'running------', 'tests--------', 'and----------', 'linters------', 'section------', 'of-----------', 'our----------', 'documentation', 'to-----------', 'learn--------', 'how----------', 'to-----------', 'test---------', 'your---------', 'code.--------', 'For----------', 'cross-browser']
+# ['yyyyyyyyyyy1', 'yyyyyyyyyyy2', 'yyyyyyyyRead', 'yyyyyyyyythe', 'yyyyyrunning', 'yyyyyyytests', 'yyyyyyyyyand', 'yyyyylinters', 'yyyyysection', 'yyyyyyyyyyof', 'yyyyyyyyyour', 'documentation', 'yyyyyyyyyyto', 'yyyyyyylearn', 'yyyyyyyyyhow', 'yyyyyyyyyyto', 'yyyyyyyytest', 'yyyyyyyyyour', 'yyyyyyycode.', 'yyyyyyyyyFor', 'cross-browser']
+# ['1xxxxxxxxxxxxxx', '2xxxxxxxxxxxxxx', 'Readxxxxxxxxxxx', 'thexxxxxxxxxxxx', 'runningxxxxxxxx', 'testsxxxxxxxxxx', 'andxxxxxxxxxxxx', 'lintersxxxxxxxx', 'sectionxxxxxxxx', 'ofxxxxxxxxxxxxx', 'ourxxxxxxxxxxxx', 'documentationxx', 'toxxxxxxxxxxxxx', 'learnxxxxxxxxxx', 'howxxxxxxxxxxxx', 'toxxxxxxxxxxxxx', 'testxxxxxxxxxxx', 'yourxxxxxxxxxxx', 'code.xxxxxxxxxx', 'Forxxxxxxxxxxxx', 'cross-browserxx']
+###########################################################
+# How to avoid multiple break conditions like in this example
+done = False
+counter = 0
+for i in range(1, 6, 1):  # 1st loop
+    print("i:", i)
+    for j in range(1, 11, 2):  # 2nd loop
+        print("   i, j:", i, j)
+        for k in range(1, 21, 4):  # 3rd loop
+            print("      i,j,k:", i, j, k)
+            if i % 3 == 0 and j % 3 == 0 and k % 3 == 0:
+                done = True
+                break  # breaking from 3rd loop
+        if done:
+            break  # breaking from 2nd loop
+    if done:
+        break  # breaking from 1st loop
+    print(counter)
+# print(i,j,k)
+# 3 3 9
+
+# Break any nested loop with a condition
+def cond(
+    i, j, k
+):  # the function which checks every loop if the break condition is True
+    return i % 3 == 0 and j % 3 == 0 and k % 3 == 0
+
+
+alli = range(1, 6, 1), range(1, 11, 2), range(1, 21, 4)
+for v in iter_with_breaking_condition(
+    *alli,  # pass all iterables
+    cond,  # function with the condition
+    input_vars={
+        "i": 0,
+        "j": 0,
+        "k": 1,
+    },
+    # the variables that need to be shared with the condition function, they don't have to exist yet
+    output_var="outdiv3",  # the name of the output dict with all variables from input_vars
+    delete_old=True,  # input_vars will be deleted
+    clean_vars=True,  # input_vars will be deleted after finishing the execution
+    print_vars=True,  # verbose
+    counter="counter",  # like enumerate
+):
+    # you can access now all variables that you passed as input_vars as well as counter
+    # You have to update them if they are part of the break condition
+    it.i, it.j, it.k = v
+    print(it.counter)
+print(it.outdiv3)  # you can access the variable in output_var
+# output
+# print(it.outdiv3)
+# {'i': 3, 'j': 3, 'k': 9}
+
+
+
+# Another example
+def cond(i, j, k):
+    return i % 3 == 0 and j % 3 == 0 and k % 3 == 0
+
+
+alli = [50, 50, 50] * 100, [150, 150, 150] * 100, [250, 250, 250] * 100
+for r, g, b in iter_with_breaking_condition(
+    *alli,
+    lambda total: total > 10000,
+    input_vars={"total": 0},
+    output_var="out",
+    delete_old=True,
+    clean_vars=True,
+    print_vars=True,
+    counter="counter",
+):
+    # print(v)
+    it.total = it.total + r + g + b
+    print(it.counter)
+print(it.out)
+
+# output:
+# print(it.out)
+# {'total': 10350}
+###########################################################
+# Merge nested dicts and iterrate (keys/value pairs) without loosing data (values are joined and not overwritten)
+people = {
+    1: {"name": "John", "age": "27", "sex": "Male"},
+    2: {"name": "Marie", "age": "22", "sex": "Female"},
+    3: {"name": "Luna", "age": "24", "sex": "Female"},
+    4: {
+        "name": "Peter",
+        "age": "29",
+        "sex": ["Female", "Male"],
+        1: "xx",
+        "sex2": ("Female", "Male"),
+    },
+}
+
+people3 = {
+    1: {"namexxxxxxxxx": "John", "age": "27", "sex": "Male"},
+    2: {"name": "Marie", "age": "22", "sex": "Female"},
+    3: {"name": "Luna", "agexxxxxxxxxx": "24", "sex": "Female"},
+    4: {
+        "name": "Peter",
+        "age": "29",
+        "sex": ["Female", "Male"],
+        1: "xx",
+        "sex2": ("Female", "Male"),
+    },
+}
+people2 = {
+    11: {"name": "Johnaaa", "age": "2x337", "sex": "Maleooo"},
+    21: {"name": "Mariexx", "age": "22", "sex": "Female"},
+    13: {"name": "Luna", "age": "24444", "sex": "Feoomale"},
+    14: {
+        "name": "Peter",
+        "age": "29",
+        "sex": ["Female", "Male"],
+        111: "xx",
+        "sex2": ("Female", "Male"),
+    },
+}
+d1 = {1: {"a": "A"}, 2: {"b": "B"}}
+
+d2 = {2: {"c": "C"}, 3: {"d": ["D", "dd", "s"]}}
+
+dict1 = {1: {"a": 1}, 2: {"b": 2}}
+
+dict2 = {2: {"c": 222}, 3: {"d": {3, 6}}}
+
+data2 = {"A": [4, 5, 6]}
+
+for (
+    keys,
+    item,
+) in iter_join_dicts_no_loss(people, people2, d1, d2, dict2, dict1, data2, people3):
+    print(keys, item)
+
+# output:
+# ...
+# (1, 14, 'sex', 1) Male
+# (1, 14, 111) xx
+# (1, 14, 'sex2', 0) Female
+# (1, 14, 'sex2', 1) Male
+# (2, 1, 'a') A
+# (2, 2, 'b') B
+# (3, 2, 'c') C
+# (3, 3, 'd', 0) D
+# (3, 3, 'd', 1) dd
+# ...
+
+###########################################################
+# get free file names (enumeration)
+for ini, fi in enumerate(
+    iter_get_free_filenames(
+        folder="f:\\testfiles", fileextension=".txt", leadingzeros=5
+    )
+):
+    with open(fi, mode="w", encoding="utf-8") as f:
+        f.write("")
+    if ini == 5:
+        break
+    print(fi)
+
+# output:
+# f:\testfiles\00002.txt
+# f:\testfiles\00003.txt
+# f:\testfiles\00004.txt
+# f:\testfiles\00005.txt
+# f:\testfiles\00006.txt
+#
+###########################################################
+# log split for iterables
+for li in iter_log_split(list(range(20))):
+    print(li)
+
+# output:
+# [0]
+# [1, 2]
+# [3, 4, 5]
+# [6, 7, 8, 9]
+# [10, 11, 12, 13, 14]
+# [15, 16, 17, 18, 19]
+###########################################################
+# Iterate through a nested dict (keys/value pairs) and update
+# the values in the original dict
+dictoriginal = data = {
+    "level1": {
+        "t1": {
+            "s1": {"col1": 5, "col2": 4, "col3": 4, "col4": 9},
+            "s2": {"col1": 1, "col2": 5, "col3": 4, "col4": 8},
+            "s3": {"col1": 11, "col2": 8, "col3": 2, "col4": 9},
+            "s4": {"col1": 5, "col2": 4, "col3": 4, "col4": 9},
+        },
+        "t2": {
+            "s1": {"col1": 5, "col2": 4, "col3": 4, "col4": 9},
+            "s2": {"col1": 1, "col2": 5, "col3": 4, "col4": 8},
+            "s3": {"col1": 11, "col2": 8, "col3": 2, "col4": 9},
+            "s4": {"col1": 5, "col2": 4, "col3": 4, "col4": 9},
+        },
+    }
+}
+for keys, value, setvalue in iter_nested_dict_to_edit(dictoriginal):
+    if keys[-1] == "col1":
+        if isinstance(value, int):
+            if value > 4:
+                setvalue(10000)
+            else:
+                setvalue(555)
+
+# output:
+
+# dictoriginal # changes the original dict!
+# Out[16]:
+# {'level1': {'t1': {'s1': {'col1': 10000, 'col2': 4, 'col3': 4, 'col4': 9},
+#    's2': {'col1': 555, 'col2': 5, 'col3': 4, 'col4': 8},
+#    's3': {'col1': 10000, 'col2': 8, 'col3': 2, 'col4': 9},
+#    's4': {'col1': 10000, 'col2': 4, 'col3': 4, 'col4': 9}},
+#   't2': {'s1': {'col1': 10000, 'col2': 4, 'col3': 4, 'col4': 9},
+#    's2': {'col1': 555, 'col2': 5, 'col3': 4, 'col4': 8},
+#    's3': {'col1': 10000, 'col2': 8, 'col3': 2, 'col4': 9},
+#    's4': {'col1': 10000, 'col2': 4, 'col3': 4, 'col4': 9}}}}
+###########################################################
+args = [0], [1, 2, 3, 4], [5, 6], [7, 8, 9, 10, 11, 12, 13]
+vad = list(iter_adjust_list_same_common_size_without_cutting(*args))
+for indexno, itemno, multiplicated_item in vad:
+    print(indexno, itemno, multiplicated_item)
+
+
+# output:
+# All items have been adjusted to 28 items (lowest common value that can be divided by the length of all lists), nothing has been cut off
+# 0 0 [(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)]
+# 0 1 [(1, 1, 1, 1, 1, 1, 1), (2, 2, 2, 2, 2, 2, 2), (3, 3, 3, 3, 3, 3, 3), (4, 4, 4, 4, 4, 4, 4)]
+# 0 2 [(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5), (6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6)]
+# 0 3 [(7, 7, 7, 7), (8, 8, 8, 8), (9, 9, 9, 9), (10, 10, 10, 10), (11, 11, 11, 11), (12, 12, 12, 12), (13, 13, 13, 13)]
+###########################################################
+# same as iter_adjust_list_same_common_size_without_cutting, but zipped
+vad2 = list(iter_adjust_list_same_common_size_without_cutting_zipped(*args))
+for indexno, itemno, multiplicated_item in vad2:
+    print(indexno, itemno, multiplicated_item, end="|")
+# output:
+# 0 0 [(0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,)]
+# 0 1 [(1, 2, 3, 4), (1, 2, 3, 4), (1, 2, 3, 4), (1, 2, 3, 4), (1, 2, 3, 4), (1, 2, 3, 4), (1, 2, 3, 4)]
+# 0 2 [(5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6)]
+# 0 3 [(7, 8, 9, 10, 11, 12, 13), (7, 8, 9, 10, 11, 12, 13), (7, 8, 9, 10, 11, 12, 13), (7, 8, 9, 10, 11, 12, 13)]
+###########################################################
+# returns a single list with adjusted length of every item
+vad3 = list(iter_adjust_list_next_to_each_other_zipped(*args))
+for multiplicated_item in vad3:
+    print(multiplicated_item)
+
+# output:
+# [(0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,),
+# (1, 2, 3, 4), (1, 2, 3, 4), (1, 2, 3, 4), (1, 2, 3, 4), (1, 2, 3, 4), (1, 2, 3, 4), (1, 2, 3, 4),
+# (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (5, 6), (7, 8, 9, 10, 11, 12, 13),
+# (7, 8, 9, 10, 11, 12, 13), (7, 8, 9, 10, 11, 12, 13), (7, 8, 9, 10, 11, 12, 13)]
+###########################################################
+# returns the first value in every list
+vad4 = list(iter_transpose_ajusted_list(*args))
+for multiplicated_item in vad4:
+    print(multiplicated_item)
+# output:
+# (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+# 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7)
+###########################################################
+# equilibrates the quantity of each list item
+vad5 = list(iter_equilibrate_zip(*args, maxresults=10))
+for multiplicated_item in vad5:
+    print(multiplicated_item, end=",")
+
+# output:
+# 0,0,5,6,0,0,1,2,3,4,5,6,0,0,5,6,0,7,8,9,10,11,12,13,0,1,2,3,4,5,6,0,0,5,6,0,0,1,2,3,4,5,6,0,0,5,6,7,8,9,10,11,12,13,0,0,1,2,3,4,5,6,0,0,5,6,0,0,1,2,3,4,5,6,0,7,8,9,10,11,12,13,0,5,6,0,0,1,2,3,4,5,6,0,0,5,6,0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,
+###########################################################
+# Same as iter_equilibrate_zip but without flattening
+vad6 = list(int_equilibrate_each_value_zip_keep_list(*args))
+for multiplicated_item in vad6:
+    print(multiplicated_item, end=",")
+# output:
+# [0],[0],[5, 6],[0],[0],[1, 2, 3, 4],[5, 6],[0],[0],[5, 6],[0],[7, 8, 9, 10, 11, 12, 13],[0],[1, 2, 3, 4],
+# [5, 6],[0],[0],[5, 6],[0],[0],[1, 2, 3, 4],[5, 6],[0],[0],[5, 6],
+# [7, 8, 9, 10, 11, 12, 13],[0],[0],[1, 2, 3, 4],[5, 6],[0],[0],[5, 6],[0]
+# ,[0],[1, 2, 3, 4],[5, 6],[0],[7, 8, 9, 10, 11, 12, 13],[0],[5, 6],[0],
+# [0],[1, 2, 3, 4],[5, 6],[0],[0],[5, 6],[0],[0],[1, 2, 3, 4],[5, 6],
+# [7, 8, 9, 10, 11, 12, 13]
+###########################################################
+# get all ascii characters in different formats
+list(iter_get_ascii_table())
+
+# output:
+# ...
+# (b'0xf2', 242, b'\xc3\xb2'),
+# (b'0xf3', 243, b'\xc3\xb3'),
+# (b'0xf4', 244, b'\xc3\xb4'),
+# (b'0xf5', 245, b'\xc3\xb5'),
+# (b'0xf6', 246, b'\xc3\xb6'),
+# ...
+###########################################################
+word, wordlist, wordlist_b = iter_string_to_utf16_byte(word="""ü'~ç)""")
+# output:
+# word
+# Out[18]: b"\xfc'~\xe7)"
+
+# wordlist
+# Out[19]: [b'\xfc', b"'", b'~', b'\xe7', b')'] without empty bytes
+
+# wordlist_b
+# Out[20]: [b'\xfc', b'', b"'", b'', b'~', b'', b'\xe7', b'', b')', b''] # contains empty bytes
+###########################################################
+# Convert a list of utf-16-le to string
+list(iter_utf16bytestostring([word]))
+list(iter_utf16bytestostring([wordlist]))
+
+# output:
+# Out[21]: ["ü'~ç)"]
+# Out[22]: ["ü'~ç)"]
+###########################################################
+# converts hex string to binary
+pattern = ["0xff", "0xde", "0xdd", "0xaa"]
+binconv = list(iter_hexstrings2bin(pattern))
+print(binconv)
+# convert to np array
+binconvnp = np.frombuffer(b"".join(binconv), dtype="uint8")
+print(binconvnp)
+
+# output:
+# [b'\xff', b'\xde', b'\xdd', b'\xaa']
+# [255 222 221 170]
+###########################################################
+# convert hex to int / int to hex
+print(list(iter_int_to_hex(range(13, 18))))
+l = ["0xd", "0xe", "0xf", "0x10", "0x11"]
+print(list(iter_hex_to_int(l)))
+
+# output:
+# ['0xd', '0xe', '0xf', '0x10', '0x11']
+# [13, 14, 15, 16, 17]
+###########################################################
+# string to binary
+ii = list(iter_str2bin(binbytes="baba", fill=8))
+
+# output:
+# [b'00000062', b'00000061', b'00000062', b'00000061']
+###########################################################
+# Use NumPy to split an iterable into n slices
+a = np.array(list(range(20)))
+for q in iter_split_with_np_in_n_slices(a, n=4):
+    print(q)
+
+# output:
+# [0 1 2 3 4]
+# [5 6 7 8 9]
+# [10 11 12 13 14]
+# [15 16 17 18 19]
+###########################################################
+# Use NumPy to split an iterable into n pieces with a certain size
+for q in iter_split_with_np_in_pieces_of(a, n=4):
+    print(q)
+
+
+# output:
+# [0 1 2 3]
+# [4 5 6 7]
+# [8  9 10 11]
+# [12 13 14 15]
+# [16 17 18 19]
+
+for q in iter_split_with_np_in_pieces_of(a, n=10):
+    print(q)
+
+# output:
+# [0 1 2 3 4 5 6 7 8 9]
+# [10 11 12 13 14 15 16 17 18 19]
+###########################################################
+# convert data to void (raw)
+for b in iter_convert_np_array_to_v(np.array([1, 2, 3]), contiguous=True):
+    print(b)
+
+# output:
+# [b'\x01' b'\x00' b'\x00' b'\x00']
+# [b'\x02' b'\x00' b'\x00' b'\x00']
+# [b'\x03' b'\x00' b'\x00' b'\x00']
+###########################################################
+# apply a vectorized function against each item in a NumPy array
+list(
+    iter_npapply_vetor_function(
+        np.array([10, 20, 30]), function=lambda x, y: re.sub("0", y, str(x)), y="222"
+    )
+)
+bb = np.fromiter(iter_npapply_vetor_function(nparray=a, function=hex), dtype="O")
+cc = list(iter_npapply_vetor_function(nparray=bb, function=int, base=16))
+
+# output:
+# ['1222', '2222', '3222']
+
+# bb
+# array(['0x0', '0x1', '0x2', '0x3', '0x4', '0x5', '0x6', '0x7', '0x8',
+#        '0x9', '0xa', '0xb', '0xc', '0xd', '0xe', '0xf', '0x10', '0x11',
+#        '0x12', '0x13'], dtype=object)
+
+# cc
+# Out[21]: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+###########################################################
+# Converts a NumPy array to one string
+a1 = np_array_to_string(
+    nparray=np.array([1, 2, 3]).astype("S8"),
+    encoding="utf-8",
+    errors="replace",
+    replace0=True,
+)
+a2 = np_array_to_string(
+    nparray=np.array([1, 2, 3]), encoding="utf-8", errors="replace", replace0=True
+)
+a3 = np_array_to_string(
+    nparray=np.array([1, 2, 3]).astype("f"),
+    encoding="utf-8",
+    errors="replace",
+    replace0=True,
+)
+# output
+
+
+# a1
+# Out[30]: '123'
+# a2
+# Out[31]: '\x01\x02\x03'
+# a3
+# Out[32]: '�?@@@'
+###########################################################
+# Search a sequence in a NumPy array
+for k in iter_search_sequence_numpy(
+    n := np.array(list(reversed(range(10)))), np.array([3, 2, 1])
+):
+    print(k, n[k])
+
+# 6 3
+# 7 2
+# 8 1
+###########################################################
+# Finds the lowest common multiplier that every number/list can be divided
+print(get_common_division_multiplier(3, 4, 9))
+print(get_common_division_multiplier([3, 4, 9], [1, 2, 8, 4, 3], [2, 2]))
+
+# output
+# {36: {9: 4, 4: 9, 3: 12}, 108: {9: 12, 4: 27, 3: 36}}
+# {30: {5: 6, 3: 10, 2: 15}}
+###########################################################
+# Copies a list, and shuffles it (original doesn’t change)
+for k in iter_shuffle_copied_list([10, 11, 23]):
+    print(k)
+
+# output
+# 23
+# 10
+# 11
+###########################################################
+# Shuffles a dict (original doesn’t change)
+
+for key, item in shuffle_dict({1: 2, 5: 23, 323: 4}).items():
+    print(key, item)
+
+# output
+# 323
+# 4
+# 5
+# 23
+# 1
+# 2
+###########################################################
+# Normalizes lists by repeating
+# Finds the lowest common multiplier that every number/list can be divided
+# No item is left out
+for key, item in cycle_list_until_every_list_fits(
+    [4, 5, 6],
+    [4, 1],
+    maxresults=4,
+    append=True,
+).items():
+    print(key, item)
+
+for key, item in cycle_list_until_every_list_fits(
+    [4, 5, 6],
+    [2, 1],
+    [44, 42, 21],
+    maxresults=4,
+    append=False,
+).items():
+    print(key, item)
+
+#
+# list(cycle_list_until_every_list_fits([4, 5, 6], [4,1], maxresults=4, append=True, ).items())
+# Out[3]:
+# [(6,
+#   defaultdict(list, {0: [[4, 5, 6], [4, 5, 6]], 1: [[4, 1], [4, 1], [4, 1]]})),
+#  (12,
+#   defaultdict(list,
+#               {0: [[4, 5, 6], [4, 5, 6], [4, 5, 6], [4, 5, 6]],
+#                1: [[4, 1], [4, 1], [4, 1], [4, 1], [4, 1], [4, 1]]})),
+#  (18,
+#   defaultdict(list,
+#               {0: [[4, 5, 6],
+#                 [4, 5, 6],
+#                 [4, 5, 6],
+#                 [4, 5, 6],
+#                 [4, 5, 6],
+#                 [4, 5, 6]],
+#                1: [[4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1]]})),
+#  (24,
+#   defaultdict(list,
+#               {0: [[4, 5, 6],
+#                 [4, 5, 6],
+#                 [4, 5, 6],
+#                 [4, 5, 6],
+#                 [4, 5, 6],
+#                 [4, 5, 6],
+#                 [4, 5, 6],
+#                 [4, 5, 6]],
+#                1: [[4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1],
+#                 [4, 1]]}))]
+#
+#
+
+# list((cycle_list_until_every_list_fits([4, 5, 6], [2,1],[44,42,21], maxresults=2, append=False, ).items()))
+# Out[5]:
+# [(6,
+#   defaultdict(list,
+#               {0: [44, 42, 21, 44, 42, 21],
+#                1: [4, 5, 6, 4, 5, 6],
+#                2: [2, 1, 2, 1, 2, 1]})),
+#  (12,
+#   defaultdict(list,
+#               {0: [44, 42, 21, 44, 42, 21, 44, 42, 21, 44, 42, 21],
+#                1: [4, 5, 6, 4, 5, 6, 4, 5, 6, 4, 5, 6],
+#                2: [2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1]}))]
+
+
+###########################################################
+# Sorts a dict by keys
+sort_dict(di={2: 3, 54: 23, 1: 2})
+
+# output
+# {1: 2, 2: 3, 54: 23}
+###########################################################
+# Get random values from a list (no repetition)
+iter_get_random_not_repeating_values(list_=list(range(10)), howmany=4)
+# Out[6]: [6, 4, 3, 1]
+iter_get_random_not_repeating_values(list_=list(range(10)), howmany=4)
+# Out[7]: [5, 6, 7, 9]
+###########################################################
+# Get random values from a list (with repetition limit)
+iter_get_random_values_with_max_rep(list_=list(range(3)), howmany=9, maxrep=4)
+# Out[8]: [1, 1, 0, 0, 0, 2, 2, 2, 1]
+iter_get_random_values_with_max_rep(list_=list(range(3)), howmany=9, maxrep=4)
+# Out[9]: [2, 0, 0, 2, 2, 1, 0, 2, 1]
+###########################################################
+l = ["hallo", "12hal33", "42ha004942r", "4204h213", "hall000", "h", "cvwsA"]
+for _ in (iter_sort_by_item_pos(l, 3,fillvalue='')):
+    print(_)
+
+# output:
+# h
+# 4204h213
+# 12hal33
+# 42ha004942r
+# hallo
+# hall000
+# cvwsA
+###########################################################
+```
+
 ### update 2023-01-26 
 ```python
 ######################################################
