@@ -3,6 +3,35 @@
 ```python
 pip install group-and-iter-everything
 ```
+
+### update 2023-02-11 
+```python
+lista = list(range(20))
+for x in iter_windowed_distance(lista,fillvalue=None,distance=3):
+    print(x)
+(None, 0, 3)
+(None, 1, 4)
+(None, 2, 5)
+(0, 3, 6)
+(1, 4, 7)
+(2, 5, 8)
+(3, 6, 9)
+(4, 7, 10)
+(5, 8, 11)
+(6, 9, 12)
+(7, 10, 13)
+(8, 11, 14)
+(9, 12, 15)
+(10, 13, 16)
+(11, 14, 17)
+(12, 15, 18)
+(13, 16, 19)
+(14, 17, None)
+(15, 18, None)
+(16, 19, None)
+
+```
+
 ### update 2023-02-08 
 ```python
 from group_and_iter_everything import *
