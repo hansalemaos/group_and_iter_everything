@@ -2130,3 +2130,15 @@ def np_array_to_string(nparray, encoding="utf-8", errors="replace", replace0=Tru
 
 def iter_sort_by_item_pos(v,pos,fillvalue=''):
     return sorted(v, key=lambda x: x[pos] if len(x) > pos else fillvalue)
+
+
+def iter_windowed_distance(it,fillvalue=None,distance=1):
+    if not isinstance(it,list):
+        it = list(it)
+    cou=0
+    for a, b, c in itertools.zip_longest(([fillvalue]*distance) + it, it, it[distance:], fillvalue=fillvalue):
+        yield a, b, c
+        cou += 1
+
+        if cou == len(it):
+            return
